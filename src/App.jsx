@@ -722,6 +722,7 @@ function CustomerApp({ customer:initCustomer, onLogout }) {
   const [coupons, setCoupons] = useState([]);
   const [showTerms, setShowTerms] = useState(false);
   const [showRedeem, setShowRedeem] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
   const [redeemLoading, setRedeemLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
 
