@@ -394,6 +394,80 @@ function DonorLeaderboard({ currentCustomerId }) {
   );
 }
 
+
+// ─── EDIT PROFILE ────────────────────────────────────────────────────────────
+function EditProfile({ customer, onSave, onBack }) {
+  const [form, setForm] = useState({
+    name: customer.name || '',
+    email: customer.email || '',
+    birthMonth: customer.birth_month !== null && customer.birth_month !== undefined ? MONTHS[customer.birth_month] : ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const set = (k,v) => setForm(f=>({...f,[k]:v}));
+
+  const nameValid = form.name.trim().split(' ').filter(w=>w.length>0).length >= 2;
+
+  const save = async () => {
+    if (!nameValid) { setError('Please enter your first and last name'); return; }
+    if (!form.name || !form.email) { setError('Name and email are required'); return; }
+    setLoading(true); setError('');
+    try {
+      await db.update('customers', {id: customer.id}, {
+        name: form.name.trim(),
+        email: form.email.trim(),
+        birth_month: form.birthMonth ? MONTHS.indexOf(form.birthMonth) : null
+      });
+      setSuccess(true);
+      setTimeout(()=>onSave({...customer, name:form.name.trim(), email:form.email.trim(), birth_month:form.birthMonth?MONTHS.indexOf(form.birthMonth):null}), 1000);
+    } catch(e) {
+      setError('Something went wrong. Please try again.');
+      console.error(e);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div style={{...S.screen, paddingBottom:40}}>
+      <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet" />
+      <div style={{borderBottom:`1px solid ${C.mid}`, padding:"18px 20px 14px", display:"flex", alignItems:"center", gap:14, background:C.dark}}>
+        <button onClick={onBack} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:20,padding:0}}>←</button>
+        <div style={{fontFamily:"'Oswald',sans-serif",fontSize:18,fontWeight:600,letterSpacing:3,textTransform:"uppercase"}}>Edit Profile</div>
+      </div>
+      <div style={{padding:24}}>
+        {success && (
+          <div style={{background:"#0f2419",border:"1px solid #4caf7d",borderRadius:10,padding:"12px 16px",marginBottom:20,fontSize:13,color:"#4caf7d",textAlign:"center"}}>
+            ✓ Profile updated successfully!
+          </div>
+        )}
+        {error && (
+          <div style={{background:"#44000030",border:"1px solid #ff6b6b",borderRadius:10,padding:"12px 16px",marginBottom:14,fontSize:12,color:"#ff6b6b"}}>{error}</div>
+        )}
+        <label style={S.label}>Full Name *</label>
+        <input value={form.name} onChange={e=>set("name",e.target.value)} placeholder="First Last" style={S.input} />
+        {form.name && !nameValid && (
+          <div style={{fontSize:11,color:"#ff6b6b",marginTop:-10,marginBottom:14}}>Please enter your first and last name</div>
+        )}
+        <label style={S.label}>Email Address *</label>
+        <input value={form.email} onChange={e=>set("email",e.target.value)} placeholder="you@email.com" type="email" style={S.input} />
+        <label style={S.label}>Birth Month <span style={{color:C.mid}}>optional</span></label>
+        <select value={form.birthMonth} onChange={e=>set("birthMonth",e.target.value)} style={S.input}>
+          <option value="">Select month…</option>
+          {MONTHS.map(m=><option key={m} value={m}>{m}</option>)}
+        </select>
+        <div style={{background:C.dark3,borderRadius:10,padding:"12px 16px",marginBottom:20,fontSize:12,color:C.mid,lineHeight:1.6}}>
+          To update your phone number please visit us in store or contact us directly.
+        </div>
+        <button onClick={save} disabled={!nameValid||!form.name||!form.email||loading}
+          style={S.btn(nameValid&&form.name&&form.email&&!loading?C.orange:C.mid, nameValid&&form.name&&form.email&&!loading?C.black:C.dark3, {cursor:nameValid&&form.name&&form.email&&!loading?"pointer":"default"})}>
+          {loading?"Saving...":"Save Changes"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── INSTALL PROMPT ──────────────────────────────────────────────────────────
 function InstallPrompt({ onDismiss }) {
   const [isIOS, setIsIOS] = useState(false);
@@ -513,7 +587,8 @@ function SignupScreen({ onBack, onComplete }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const set=(k,v)=>setForm(f=>({...f,[k]:v}));
-  const valid=form.name&&form.phone&&form.email&&agreed;
+  const nameValid=form.name.trim().split(' ').filter(w=>w.length>0).length>=2;
+  const valid=nameValid&&form.phone&&form.email&&agreed;
 
   const submit=async()=>{
     if (!valid||loading) return;
@@ -549,6 +624,9 @@ function SignupScreen({ onBack, onComplete }) {
         {error && <div style={{background:"#44000030",border:"1px solid #ff6b6b",borderRadius:10,padding:"10px 14px",marginBottom:14,fontSize:12,color:"#ff6b6b"}}>{error}</div>}
         <label style={S.label}>Full Name *</label>
         <input value={form.name} onChange={e=>set("name",e.target.value)} placeholder="First Last" style={S.input} />
+        {form.name && !form.name.trim().split(' ').filter(w=>w.length>0).length >= 2 && (
+          <div style={{fontSize:11,color:"#ff6b6b",marginTop:-10,marginBottom:14}}>Please enter your first and last name</div>
+        )}
         <label style={S.label}>Phone Number *</label>
         <input value={form.phone} onChange={e=>set("phone",e.target.value)} placeholder="555-000-0000" style={S.input} />
         <div style={{fontSize:11,color:C.mid,marginTop:-10,marginBottom:14}}>Any format works — dashes, spaces, or none</div>
@@ -681,6 +759,7 @@ function CustomerApp({ customer:initCustomer, onLogout }) {
   return (
     <div style={{...S.screen,paddingBottom:80}}>
       <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet" />
+      {showEditProfile && <EditProfile customer={cust} onSave={(updated)=>{setCust(updated);setShowEditProfile(false);}} onBack={()=>setShowEditProfile(false)} />}
       {showTerms && <TermsModal onClose={()=>setShowTerms(false)} />}
       {showRedeem && <RedeemModal customer={cust} tier={tier} onCoupon={handleCoupon} onDonate={handleDonate} onClose={()=>setShowRedeem(false)} loading={redeemLoading} />}
 
@@ -734,6 +813,9 @@ function CustomerApp({ customer:initCustomer, onLogout }) {
               <button onClick={()=>setShowRedeem(true)} disabled={cust.points<1000} style={S.btn(cust.points>=1000?C.orange:C.mid,cust.points>=1000?C.black:C.dark3,{cursor:cust.points>=1000?"pointer":"default"})}>
                 {cust.points>=1000?"Redeem Points →":`${(1000-cust.points).toLocaleString()} pts until next reward`}
               </button>
+            </div>
+            <div style={{margin:"0 16px 10px"}}>
+              <button onClick={()=>setShowEditProfile(true)} style={S.btn("transparent",C.orange2,{border:`1px solid ${C.orange2}50`,fontSize:11})}>Edit My Profile</button>
             </div>
             <div style={{margin:"0 16px"}}>
               <button onClick={()=>setShowTerms(true)} style={S.btn("transparent",C.gray,{border:`1px solid ${C.mid}`,fontSize:11})}>View Terms & Conditions</button>
@@ -938,6 +1020,67 @@ function CustomerApp({ customer:initCustomer, onLogout }) {
   );
 }
 
+
+// ─── STAFF EDIT CUSTOMER ─────────────────────────────────────────────────────
+function StaffEditCustomer({ customer, onSave, onBack, toast_ }) {
+  const [form, setForm] = useState({
+    name: customer.name || '',
+    phone: customer.phone || '',
+    email: customer.email || '',
+    birthMonth: customer.birth_month !== null && customer.birth_month !== undefined ? MONTHS[customer.birth_month] : ''
+  });
+  const [loading, setLoading] = useState(false);
+  const set = (k,v) => setForm(f=>({...f,[k]:v}));
+
+  const save = async () => {
+    if (!form.name || !form.phone) return;
+    setLoading(true);
+    try {
+      await db.update('customers', {id: customer.id}, {
+        name: form.name.trim(),
+        phone: normalizePhone(form.phone),
+        email: form.email.trim(),
+        birth_month: form.birthMonth ? MONTHS.indexOf(form.birthMonth) : null
+      });
+      toast_('✓ Customer updated');
+      onSave();
+    } catch(e) {
+      toast_('Error saving', '#ef4444');
+      console.error(e);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div style={{marginBottom:12}}>
+      <div style={S.card({border:`1px solid ${C.orange}30`})}>
+        <div style={{fontFamily:"'Oswald',sans-serif",fontSize:13,fontWeight:600,letterSpacing:2,color:C.orange,marginBottom:14,textTransform:"uppercase"}}>✏️ Edit Member Info</div>
+        <label style={S.label}>Full Name *</label>
+        <input value={form.name} onChange={e=>set("name",e.target.value)} placeholder="First Last" style={S.input} />
+        <label style={S.label}>Phone Number *</label>
+        <input value={form.phone} onChange={e=>set("phone",e.target.value)} placeholder="555-000-0000" style={S.input} />
+        <label style={S.label}>Email</label>
+        <input value={form.email} onChange={e=>set("email",e.target.value)} placeholder="optional" style={S.input} />
+        <label style={S.label}>Birth Month</label>
+        <select value={form.birthMonth} onChange={e=>set("birthMonth",e.target.value)} style={S.input}>
+          <option value="">Select…</option>
+          {MONTHS.map(m=><option key={m} value={m}>{m}</option>)}
+        </select>
+        <div style={{display:"flex",gap:10}}>
+          <button onClick={save} disabled={!form.name||!form.phone||loading}
+            style={{...S.btn(C.orange,C.black,{flex:1})}}>
+            {loading?"Saving...":"Save Changes"}
+          </button>
+          <button onClick={onBack}
+            style={{...S.btn("transparent",C.gray,{border:`1px solid ${C.mid}`,flex:1})}}>
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── ADMIN LOGIN ──────────────────────────────────────────────────────────────
 function AdminLogin({ onSuccess, onBack }) {
   const [pin, setPin] = useState("");
@@ -1121,6 +1264,19 @@ function AdminPanel({ onLogout }) {
           </>
         )}
 
+        {view==="edit" && selected && (
+          <StaffEditCustomer
+            customer={selected}
+            toast_={toast_}
+            onSave={async()=>{
+              await loadSelected(selected);
+              await loadCustomers();
+              setView("detail");
+            }}
+            onBack={()=>setView("detail")}
+          />
+        )}
+
         {view==="add" && (
           <>
             <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}>
@@ -1147,6 +1303,9 @@ function AdminPanel({ onLogout }) {
             <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
               <button onClick={()=>{setView("list");setSelected(null);loadCustomers();}} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:22,padding:0}}>←</button>
               <div style={{fontFamily:"'Oswald',sans-serif",fontSize:18,fontWeight:600,letterSpacing:3,textTransform:"uppercase"}}>Member Detail</div>
+            </div>
+            <div style={{marginBottom:16,marginTop:-8}}>
+              <button onClick={()=>setView("edit")} style={{...S.btn(C.orange2,C.white,{padding:"8px 14px",fontSize:11})}}>✏️ Edit Member Info</button>
             </div>
 
             {(()=>{
