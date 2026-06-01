@@ -707,15 +707,22 @@ function CustomerApp({ customer:initCustomer, onLogout }) {
   const donatedThisYear = getYearDonated(coupons);
   const showWarning = tier.order>0 && spent<tier.min+300;
 
-  const loadData=useCallback(async()=>{
-    try {
-      const [v,cp]=await Promise.all([
-        db.query("visits",`?customer_id=eq.${cust.id}&order=created_at.desc`),
-        db.query("coupons",`?customer_id=eq.${cust.id}&order=created_at.desc`)
-      ]);
-      setVisits(v); setCoupons(cp);
-    } catch(e){ console.error(e); }
-    setDataLoading(false);
+  const loadData=useCallback(()=>{
+    // Use sequential calls instead of Promise.all for better Safari compatibility
+    setDataLoading(true);
+    db.query("visits",`?customer_id=eq.${cust.id}&order=created_at.desc`)
+      .then(v=>{
+        setVisits(v);
+        return db.query("coupons",`?customer_id=eq.${cust.id}&order=created_at.desc`);
+      })
+      .then(cp=>{
+        setCoupons(cp);
+        setDataLoading(false);
+      })
+      .catch(e=>{
+        console.error("loadData error:", e);
+        setDataLoading(false);
+      });
   },[cust.id]);
 
   useEffect(()=>{ loadData(); },[loadData]);
