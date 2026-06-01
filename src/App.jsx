@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 const LOGO_FULL = "/logo-full.png";
 const LOGO_SQUARE = "/logo-square.jpg";
@@ -684,6 +684,34 @@ function LoginScreen({ onBack, onLogin }) {
       </div>
     </div>
   );
+}
+
+
+// ─── ERROR BOUNDARY ──────────────────────────────────────────────────────────
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{minHeight:"100vh",background:"#000",color:"#fff",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:32,fontFamily:"sans-serif"}}>
+          <div style={{fontSize:14,color:"#ed7d05",marginBottom:16,letterSpacing:2,textTransform:"uppercase"}}>Something went wrong</div>
+          <div style={{fontSize:11,color:"#565656",textAlign:"center",maxWidth:300,lineHeight:1.6}}>
+            {this.state.error && this.state.error.toString()}
+          </div>
+          <button onClick={()=>window.location.reload()} style={{marginTop:24,background:"#ed7d05",border:"none",color:"#000",padding:"12px 24px",borderRadius:10,cursor:"pointer",fontSize:14,fontFamily:"sans-serif"}}>
+            Try Again
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 // ─── CUSTOMER APP ─────────────────────────────────────────────────────────────
@@ -1472,7 +1500,7 @@ export default function App() {
     <>
       <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet" />
       {showInstall && <InstallPrompt onDismiss={dismissInstall} />}
-      {screen==="customer"&&customer && <CustomerApp customer={customer} onLogout={()=>{setCustomer(null);setScreen("splash");}} />}
+      {screen==="customer"&&customer && <ErrorBoundary><CustomerApp customer={customer} onLogout={()=>{setCustomer(null);setScreen("splash");}} /></ErrorBoundary>}
       {screen==="adminLogin" && <AdminLogin onSuccess={()=>{setAdminAuthed(true);setScreen("admin");}} onBack={()=>setScreen("splash")} />}
       {screen==="admin"&&adminAuthed && <AdminPanel onLogout={()=>{setAdminAuthed(false);setScreen("splash");}} />}
       {screen==="signup" && <SignupScreen onBack={()=>setScreen("splash")} onComplete={c=>{setCustomer(c);setScreen("customer");}} />}
