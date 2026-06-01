@@ -422,6 +422,8 @@ function InstallPrompt({ onDismiss }) {
             <div>
               <div style={{fontSize:12,color:C.gray2,marginBottom:16,lineHeight:1.6}}>Follow these steps in <strong style={{color:C.orange}}>Safari</strong> on your iPhone:</div>
               {[
+                ["Open in Safari","Make sure you have the link open in Safari — not Chrome or any other browser","🌐"],
+                ["Long press the web address","Press and hold the URL at the top of Safari until a menu appears","👆"],
                 ["Tap the Share button","The box with an arrow at the bottom of your screen","⬆️"],
                 ["Scroll down and tap","Add to Home Screen","＋"],
                 ["Tap Add","The F.A.R. icon will appear on your home screen","✓"],
@@ -435,15 +437,16 @@ function InstallPrompt({ onDismiss }) {
                 </div>
               ))}
               <div style={{marginTop:14,padding:"10px 14px",background:`${C.orange}15`,border:`1px solid ${C.orange}30`,borderRadius:10,fontSize:11,color:C.gray}}>
-                Must use <strong style={{color:C.orange}}>Safari</strong> — not Chrome or another browser.
+                Must use <strong style={{color:C.orange}}>Safari</strong> on iPhone. If you received this link through a text or app, copy the link and open it directly in Safari.
               </div>
             </div>
           )}
           {isAndroid && (
             <div>
-              <div style={{fontSize:12,color:C.gray2,marginBottom:16,lineHeight:1.6}}>Follow these steps in <strong style={{color:C.orange}}>Chrome</strong>:</div>
+              <div style={{fontSize:12,color:C.gray2,marginBottom:16,lineHeight:1.6}}>Make sure you are using <strong style={{color:C.orange}}>Google Chrome</strong> — not your default browser or any in-app browser:</div>
               {[
-                ["Tap the menu button","The three dots in the top right corner","⋮"],
+                ["Open in Chrome","Make sure you have the link open in Google Chrome before starting","🌐"],
+                ["Tap the menu button","The three dots in the top right corner of Chrome","⋮"],
                 ["Tap","Add to Home screen","＋"],
                 ["Tap Add","The F.A.R. icon will appear on your home screen","✓"],
               ].map(([title,desc,icon],i)=>(
@@ -1306,10 +1309,4 @@ export default function App() {
       {showInstall && <InstallPrompt onDismiss={dismissInstall} />}
       {screen==="customer"&&customer && <CustomerApp customer={customer} onLogout={()=>{setCustomer(null);setScreen("splash");}} />}
       {screen==="adminLogin" && <AdminLogin onSuccess={()=>{setAdminAuthed(true);setScreen("admin");}} onBack={()=>setScreen("splash")} />}
-      {screen==="admin"&&adminAuthed && <AdminPanel onLogout={()=>{setAdminAuthed(false);setScreen("splash");}} />}
-      {screen==="signup" && <SignupScreen onBack={()=>setScreen("splash")} onComplete={c=>{setCustomer(c);setScreen("customer");}} />}
-      {screen==="login" && <LoginScreen onBack={()=>setScreen("splash")} onLogin={c=>{setCustomer(c);setScreen("customer");}} />}
-      {screen==="splash" && <SplashScreen onLogin={()=>setScreen("login")} onSignup={()=>setScreen("signup")} onAdmin={()=>setScreen("adminLogin")} onInstall={handleInstall} isInstalled={isInstalled} />}
-    </>
-  );
-}
+      {screen==="admin"&&adminAuthed && <AdminPanel onLogout={()=>{setAdminAuthed(false);setScreen("splash");}
