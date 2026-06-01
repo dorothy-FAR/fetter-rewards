@@ -328,23 +328,22 @@ function DonorLeaderboard({ currentCustomerId }) {
   const medals = ["🥇","🥈","🥉"];
 
   useEffect(()=>{
-    (async()=>{
-      try {
-        const data = await db.query("coupons", `?donated=eq.true&select=customer_id,anonymous,created_at,customers(name)`);
-        const yearData = data.filter(c=>new Date(c.created_at).getFullYear()===year);
-        const map = {};
+    db.query("coupons", "?donated=eq.true&select=customer_id,anonymous,created_at,customers(name)")
+      .then(data=>{
+        const yearData=data.filter(c=>new Date(c.created_at).getFullYear()===year);
+        const map={};
         yearData.forEach(c=>{
           const id=c.customer_id;
-          if (!map[id]) map[id]={id,name:c.anonymous?"Anonymous":(c.customers && c.customers.name ? c.customers.name : "Member"),donated:0,anonymous:c.anonymous};
+          if (!map[id]) map[id]={id,name:c.anonymous?"Anonymous":(c.customers&&c.customers.name?c.customers.name:"Member"),donated:0,anonymous:c.anonymous};
           map[id].donated+=25;
           if (c.anonymous) map[id].name="Anonymous";
         });
         const sorted=Object.values(map).sort((a,b)=>b.donated-a.donated);
         setDonors(sorted);
         setTotal(sorted.reduce((s,d)=>s+d.donated,0));
-      } catch(e){ console.error(e); }
-      setLoading(false);
-    })();
+        setLoading(false);
+      })
+      .catch(e=>{ console.error(e); setLoading(false); });
   },[]);
 
   if (loading) return <div style={{padding:40,textAlign:"center",color:C.gray}}>Loading leaderboard...</div>;
