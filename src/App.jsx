@@ -791,10 +791,12 @@ function CustomerApp({ customer:initCustomer, onLogout }) {
     {id:"give",    label:"Give",    icon:"🎓"},
   ];
 
+  // Show EditProfile as full screen takeover
+  if (showEditProfile) return <EditProfile customer={cust} onSave={(updated)=>{setCust(updated);setShowEditProfile(false);}} onBack={()=>setShowEditProfile(false)} />;
+
   return (
     <div style={{...S.screen,paddingBottom:80}}>
       <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet" />
-      {showEditProfile && <EditProfile customer={cust} onSave={(updated)=>{setCust(updated);setShowEditProfile(false);}} onBack={()=>setShowEditProfile(false)} />}
       {showTerms && <TermsModal onClose={()=>setShowTerms(false)} />}
       {showRedeem && <RedeemModal customer={cust} tier={tier} onCoupon={handleCoupon} onDonate={handleDonate} onClose={()=>setShowRedeem(false)} loading={redeemLoading} />}
 
