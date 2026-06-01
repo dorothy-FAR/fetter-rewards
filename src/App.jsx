@@ -394,6 +394,84 @@ function DonorLeaderboard({ currentCustomerId }) {
   );
 }
 
+// ─── INSTALL PROMPT ──────────────────────────────────────────────────────────
+function InstallPrompt({ onDismiss }) {
+  const [isIOS, setIsIOS] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
+
+  useEffect(()=>{
+    const ua = navigator.userAgent;
+    setIsIOS(/iphone|ipad|ipod/i.test(ua));
+    setIsAndroid(/android/i.test(ua));
+  },[]);
+
+  return (
+    <div style={{position:"fixed",inset:0,background:"#000000ee",zIndex:9999,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
+      <div style={{background:C.dark,borderRadius:"20px 20px 0 0",width:"100%",maxWidth:430,overflow:"hidden",paddingBottom:20}}>
+        <div style={{background:`linear-gradient(135deg,${C.dark2},${C.dark})`,padding:"20px 20px 16px",borderBottom:`1px solid ${C.mid}`}}>
+          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:4}}>
+            <img src={LOGO_SQUARE} alt="FAR" style={{height:44,width:44,borderRadius:10,mixBlendMode:"screen"}} />
+            <div>
+              <div style={{fontFamily:"'Oswald',sans-serif",fontSize:18,fontWeight:600,letterSpacing:2,color:C.white}}>Add F.A.R. to Your Home Screen</div>
+              <div style={{fontSize:12,color:C.gray,marginTop:2}}>Access your rewards instantly like a real app</div>
+            </div>
+          </div>
+        </div>
+        <div style={{padding:"20px 20px 0"}}>
+          {isIOS && (
+            <div>
+              <div style={{fontSize:12,color:C.gray2,marginBottom:16,lineHeight:1.6}}>Follow these steps in <strong style={{color:C.orange}}>Safari</strong> on your iPhone:</div>
+              {[
+                ["Tap the Share button","The box with an arrow at the bottom of your screen","⬆️"],
+                ["Scroll down and tap","Add to Home Screen","＋"],
+                ["Tap Add","The F.A.R. icon will appear on your home screen","✓"],
+              ].map(([title,desc,icon],i)=>(
+                <div key={i} style={{display:"flex",alignItems:"center",gap:14,padding:"12px 0",borderBottom:`1px solid ${C.dark3}`}}>
+                  <div style={{width:36,height:36,borderRadius:10,background:C.orange,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:16}}>{icon}</div>
+                  <div>
+                    <div style={{fontFamily:"'Oswald',sans-serif",fontSize:14,fontWeight:500,color:C.white,letterSpacing:1}}>{title}</div>
+                    <div style={{fontSize:11,color:C.gray,marginTop:2}}>{desc}</div>
+                  </div>
+                </div>
+              ))}
+              <div style={{marginTop:14,padding:"10px 14px",background:`${C.orange}15`,border:`1px solid ${C.orange}30`,borderRadius:10,fontSize:11,color:C.gray}}>
+                Must use <strong style={{color:C.orange}}>Safari</strong> — not Chrome or another browser.
+              </div>
+            </div>
+          )}
+          {isAndroid && (
+            <div>
+              <div style={{fontSize:12,color:C.gray2,marginBottom:16,lineHeight:1.6}}>Follow these steps in <strong style={{color:C.orange}}>Chrome</strong>:</div>
+              {[
+                ["Tap the menu button","The three dots in the top right corner","⋮"],
+                ["Tap","Add to Home screen","＋"],
+                ["Tap Add","The F.A.R. icon will appear on your home screen","✓"],
+              ].map(([title,desc,icon],i)=>(
+                <div key={i} style={{display:"flex",alignItems:"center",gap:14,padding:"12px 0",borderBottom:`1px solid ${C.dark3}`}}>
+                  <div style={{width:36,height:36,borderRadius:10,background:C.orange,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:16}}>{icon}</div>
+                  <div>
+                    <div style={{fontFamily:"'Oswald',sans-serif",fontSize:14,fontWeight:500,color:C.white,letterSpacing:1}}>{title}</div>
+                    <div style={{fontSize:11,color:C.gray,marginTop:2}}>{desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {!isIOS && !isAndroid && (
+            <div style={{fontSize:13,color:C.gray,lineHeight:1.7,textAlign:"center",padding:"10px 0"}}>
+              On your phone, open this page in your browser and look for <strong style={{color:C.orange}}>"Add to Home Screen"</strong> in the browser menu.
+            </div>
+          )}
+          <div style={{marginTop:20,display:"flex",flexDirection:"column",gap:10}}>
+            <button onClick={onDismiss} style={S.btn(C.orange,C.black)}>Got It</button>
+            <button onClick={onDismiss} style={S.btn("transparent",C.mid,{border:"none",fontSize:12,padding:"8px"})}>Maybe Later</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── SPLASH ───────────────────────────────────────────────────────────────────
 function SplashScreen({ onLogin, onSignup, onAdmin, onInstall, isInstalled }) {
   return (
